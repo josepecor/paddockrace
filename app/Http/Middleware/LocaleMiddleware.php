@@ -3,18 +3,15 @@
 namespace App\Http\Middleware;
 
 use Closure;
-use Illuminate\Http\Request;
+
+use Illuminate\Support\Facades\App;
+use Illuminate\Support\Facades\Request;
+
 
 class LocaleMiddleware
 {
-    /**
-     * Handle an incoming request.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \Closure(\Illuminate\Http\Request): (\Illuminate\Http\Response|\Illuminate\Http\RedirectResponse)  $next
-     * @return \Illuminate\Http\Response|\Illuminate\Http\RedirectResponse
-     */
-    public function handle(Request $request, Closure $next)
+
+    public function handle( $request, Closure $next)
     {
         // available language in template array
         $availLocale = ['en' => 'en','es' => 'es'];
@@ -23,6 +20,14 @@ class LocaleMiddleware
         if (session()->has('locale') && array_key_exists(session()->get('locale'), $availLocale)) {
             // Set the Laravel locale
             app()->setLocale(session()->get('locale'));
+        }
+        else{
+            $preferredLanguage = Request::getPreferredLanguage(config('app.supported_locales'));
+
+            if(Str($preferredLanguage)->substr(-2,2)->upper() == Str("ES")->upper())
+                app()->setLocale('es');
+            else
+                app()->setLocale('en');
         }
 
         return $next($request);
